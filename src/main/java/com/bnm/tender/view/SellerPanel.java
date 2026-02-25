@@ -37,7 +37,10 @@ public class SellerPanel extends JPanel implements TenderController.TenderListen
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof TenderRequest) {
-                    setText(((TenderRequest) value).getQuery()); // Show the actual text
+                    String text = "<html><b>" + ((TenderRequest) value).getQuery() + "</b><br>" +
+                                  "<span style='font-size:10px; color:gray;'>" + 
+                                  ((TenderRequest) value).getBuyerAddress() + "</span></html>";
+                    setText(text);
                     setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
                         BorderFactory.createEmptyBorder(10, 10, 10, 10)

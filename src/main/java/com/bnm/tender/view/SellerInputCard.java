@@ -15,6 +15,7 @@ public class SellerInputCard extends JPanel {
     private JTextField productNameField;
     private JTextField priceField;
     private JSpinner ratingSpinner;
+    private JSpinner quantitySpinner;
     private JButton submitOfferButton;
     private TenderRequest currentRequest;
 
@@ -25,14 +26,34 @@ public class SellerInputCard extends JPanel {
         setBackground(StyleUtil.getSellerColor(seller.getName()));
         setBorder(StyleUtil.createRoundedBorder(Color.GRAY));
 
-        // Header
+        // Header with "My info" (opens seller contact popup)
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
         JLabel header = new JLabel(seller.getName() + " " + StyleUtil.ICON_SELLER);
         StyleUtil.styleHeader(header);
-        header.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        add(header, BorderLayout.NORTH);
+        header.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+        headerPanel.add(header, BorderLayout.CENTER);
+        JButton myInfoBtn = new JButton("My info & Map");
+        myInfoBtn.setFont(StyleUtil.FONT_SMALL);
+        myInfoBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        myInfoBtn.setFocusPainted(false);
+        myInfoBtn.setBorderPainted(false);
+        myInfoBtn.setContentAreaFilled(false);
+        myInfoBtn.setForeground(new Color(0, 102, 204));
+        myInfoBtn.addActionListener(e -> SellerContactDialog.showFor(this, seller));
+        headerPanel.add(myInfoBtn, BorderLayout.EAST);
+        JLabel contactLabel = new JLabel("📞 " + (seller.getContactId().isEmpty() ? "—" : seller.getContactId()));
+        contactLabel.setFont(StyleUtil.FONT_SMALL);
+        contactLabel.setForeground(Color.GRAY);
+        contactLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        JPanel headerNorth = new JPanel(new BorderLayout());
+        headerNorth.setOpaque(false);
+        headerNorth.add(headerPanel, BorderLayout.NORTH);
+        headerNorth.add(contactLabel, BorderLayout.SOUTH);
+        add(headerNorth, BorderLayout.NORTH);
 
         // Form
-        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10)); // More spacing
+        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10)); // More rows for quantity
         formPanel.setOpaque(false);
 
         JLabel lblProduct = new JLabel("Product:");
@@ -78,7 +99,16 @@ public class SellerInputCard extends JPanel {
         ratingSpinner = new JSpinner(new SpinnerNumberModel(4.5, 0.0, 5.0, 0.1));
         ratingSpinner.setFont(StyleUtil.FONT_BODY);
         formPanel.add(ratingSpinner);
-        
+
+        JLabel lblQty = new JLabel("Quantity:");
+        lblQty.setFont(StyleUtil.FONT_BODY);
+        formPanel.add(lblQty);
+
+        quantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        quantitySpinner.setFont(StyleUtil.FONT_BODY);
+        formPanel.add(quantitySpinner);
+
+        // Center: only the input form so card height stays consistent
         add(formPanel, BorderLayout.CENTER);
 
         // Footer Action
@@ -95,11 +125,10 @@ public class SellerInputCard extends JPanel {
     
     public void setRequest(TenderRequest request) {
         this.currentRequest = request;
-        // Optionally clear fields or keep them? Keeping them might be easier for bulk entry.
         submitOfferButton.setEnabled(request != null);
         if (request == null) {
-             productNameField.setText("");
-             priceField.setText("");
+            productNameField.setText("");
+            priceField.setText("");
         }
     }
 
@@ -123,8 +152,10 @@ public class SellerInputCard extends JPanel {
             String cleanPrice = priceStr.replaceAll("\\.", "");
             double price = Double.parseDouble(cleanPrice);
             
+            int quantity = (Integer) quantitySpinner.getValue();
+            
             Product product = new Product(name, name);
-            Offer offer = new Offer(seller, product, price, rating, "", currentRequest);
+            Offer offer = new Offer(seller, product, price, quantity, rating, "", currentRequest);
             
             TenderController.getInstance().submitOffer(currentRequest.getRequestId(), offer);
             
