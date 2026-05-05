@@ -1,6 +1,7 @@
 package com.bnm.tender.model;
 
 public class Offer {
+    private String id; // DB id (null until persisted)
     private Seller seller;
     private Product product;
     private double price;       // Unit price per item
@@ -8,7 +9,7 @@ public class Offer {
     private double rating;      // 0.0 to 5.0
     private String comment;
     private TenderRequest request;
-    
+
     // Calculated score for AI ranking
     private double aiScore;
 
@@ -38,6 +39,9 @@ public class Offer {
         }
     }
 
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public TenderRequest getRequest() { return request; }
     public Seller getSeller() { return seller; }
     public Product getProduct() { return product; }
     public double getPrice() { return price; }

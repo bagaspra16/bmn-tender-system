@@ -1,0 +1,14 @@
+# Build output
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Secrets — keep the real config out of git
+src/main/resources/application.properties
+.env

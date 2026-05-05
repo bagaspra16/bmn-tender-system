@@ -2,6 +2,7 @@ package com.bnm.tender.view;
 
 import com.bnm.tender.controller.TenderController;
 import com.bnm.tender.model.Offer;
+import com.bnm.tender.model.Payment;
 import com.bnm.tender.model.Seller;
 import com.bnm.tender.model.TenderRequest;
 import com.bnm.tender.util.StyleUtil;
@@ -86,6 +87,21 @@ public class RecommendationPanel extends JPanel implements TenderController.Tend
         if (box != null) {
             renderOffers(box, requestId);
         }
+    }
+
+    @Override
+    public void onPaymentCompleted(Payment payment) {
+        // Remove every request panel tied to the offers that were just paid for.
+        java.util.Set<String> paidRequestIds = new java.util.HashSet<>();
+        for (Offer o : payment.getItems()) {
+            if (o.getRequest() != null) paidRequestIds.add(o.getRequest().getRequestId());
+        }
+        for (String reqId : paidRequestIds) {
+            JPanel box = requestPanels.remove(reqId);
+            if (box != null) contentPanel.remove(box);
+        }
+        contentPanel.revalidate();
+        contentPanel.repaint();
     }
 
     private void renderOffers(JPanel box, String requestId) {

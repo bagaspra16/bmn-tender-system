@@ -2,6 +2,7 @@ package com.bnm.tender.view;
 
 import com.bnm.tender.controller.TenderController;
 import com.bnm.tender.model.Offer;
+import com.bnm.tender.model.Payment;
 import com.bnm.tender.model.Seller;
 import com.bnm.tender.model.TenderRequest;
 import com.bnm.tender.util.StyleUtil;
@@ -106,5 +107,23 @@ public class SellerPanel extends JPanel implements TenderController.TenderListen
     @Override
     public void onNewOffer(String requestId, Offer offer) {
         // Optional: Show status on the specific card
+    }
+
+    @Override
+    public void onPaymentCompleted(Payment payment) {
+        java.util.Set<String> paidRequestIds = new java.util.HashSet<>();
+        for (Offer o : payment.getItems()) {
+            if (o.getRequest() != null) paidRequestIds.add(o.getRequest().getRequestId());
+        }
+        for (int i = requestModel.size() - 1; i >= 0; i--) {
+            if (paidRequestIds.contains(requestModel.get(i).getRequestId())) {
+                requestModel.remove(i);
+            }
+        }
+        if (requestModel.isEmpty()) {
+            for (SellerInputCard card : sellerCards) card.setRequest(null);
+        } else if (requestList.getSelectedIndex() < 0) {
+            requestList.setSelectedIndex(0);
+        }
     }
 }

@@ -25,6 +25,14 @@ public class TenderRequest {
         this.buyerAddress = buyerAddress;
     }
 
+    public TenderRequest(String id, Buyer buyer, String query, String preferences, String buyerAddress) {
+        this.id = id;
+        this.buyer = buyer;
+        this.query = query;
+        this.preferences = preferences;
+        this.buyerAddress = buyerAddress;
+    }
+
     public String getRequestId() { return id; }
     public Buyer getBuyer() { return buyer; }
     public String getQuery() { return query; }

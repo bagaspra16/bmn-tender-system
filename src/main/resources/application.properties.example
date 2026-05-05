@@ -1,0 +1,10 @@
+# Copy this to application.properties and fill in your own values.
+# Find these in Supabase Dashboard -> Project Settings -> Database.
+
+db.url=jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require
+db.user=postgres
+db.password=<your-db-password>
+
+db.pool.maxSize=5
+db.pool.minIdle=1
+db.pool.connectionTimeoutMs=10000

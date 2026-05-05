@@ -62,3 +62,15 @@ The **BMN Tender System** is a desktop application where you (the Buyer) are in 
 - **Clean Text Layout (No Sideways Scrolling)**
   - Chat bubbles and system messages use fixed content widths and HTML wrapping, so messages stay **vertical** and easy to read.
   - The “Recommended for Buyer” grid uses fixed-width card content and disables horizontal scroll for a **stable, dashboard-like feel**.
+
+- **🤖 Agentic Processing (Groq-powered AI Auto-Win)**
+  - Sellers now have access to a **"🤖 Agentic AI"** button.
+  - When clicked, a self-contained Groq agent (using the powerful `llama-3.3-70b-versatile` model) analyzes the buyer's request and automatically constructs a competitive package.
+  - If competing offers exist, the AI will actively try to undercut the best score by ≥10% to ensure the seller "wins" the tender.
+  - Securely configured to load the Groq API Key from a local `.env` file to prevent leaks.
+
+- **🗄️ Database Processing Architecture (Supabase / PostgreSQL)**
+  - A comprehensive blueprint has been designed to migrate the in-memory Java application logic directly into **Supabase PostgreSQL**.
+  - **Triggers**: Auto-calculate the AI Score for each offer the moment it hits the database.
+  - **Stored Procedures**: Manage transactional atomic checkouts, linking offers to payments and marking requests as closed securely.
+  - **Functions**: Fetch best-ranked offers directly from the database, reducing server-side processing overhead.

@@ -1,5 +1,6 @@
 package com.bnm.tender.view;
 
+import com.bnm.tender.ai.GroqAgent;
 import com.bnm.tender.controller.TenderController;
 import com.bnm.tender.model.Offer;
 import com.bnm.tender.model.Product;
@@ -9,6 +10,7 @@ import com.bnm.tender.util.StyleUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class SellerInputCard extends JPanel {
     private Seller seller;
@@ -17,11 +19,12 @@ public class SellerInputCard extends JPanel {
     private JSpinner ratingSpinner;
     private JSpinner quantitySpinner;
     private JButton submitOfferButton;
+    private JButton aiAgentButton;
     private TenderRequest currentRequest;
 
     public SellerInputCard(Seller seller) {
         this.seller = seller;
-        
+
         setLayout(new BorderLayout(5, 5));
         setBackground(StyleUtil.getSellerColor(seller.getName()));
         setBorder(StyleUtil.createRoundedBorder(Color.GRAY));
@@ -59,7 +62,7 @@ public class SellerInputCard extends JPanel {
         JLabel lblProduct = new JLabel("Product:");
         lblProduct.setFont(StyleUtil.FONT_BODY);
         formPanel.add(lblProduct);
-        
+
         productNameField = new JTextField();
         productNameField.setFont(StyleUtil.FONT_BODY);
         formPanel.add(productNameField);
@@ -67,35 +70,47 @@ public class SellerInputCard extends JPanel {
         JLabel lblPrice = new JLabel("Price (Rp):");
         lblPrice.setFont(StyleUtil.FONT_BODY);
         formPanel.add(lblPrice);
-        
+
         priceField = new JTextField();
         priceField.setFont(StyleUtil.FONT_BODY);
         priceField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { formatPrice(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { formatPrice(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { formatPrice(); }
-            
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                formatPrice();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                formatPrice();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                formatPrice();
+            }
+
             private void formatPrice() {
                 SwingUtilities.invokeLater(() -> {
                     String text = priceField.getText();
-                    if (text.isEmpty()) return;
+                    if (text.isEmpty())
+                        return;
                     String clean = text.replaceAll("[^\\d]", "");
-                    if (clean.isEmpty()) return;
+                    if (clean.isEmpty())
+                        return;
                     try {
                         long value = Long.parseLong(clean);
                         java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(java.util.Locale.GERMANY);
                         String formatted = formatter.format(value);
-                        if (!text.equals(formatted)) priceField.setText(formatted);
-                    } catch (NumberFormatException ex) {}
+                        if (!text.equals(formatted))
+                            priceField.setText(formatted);
+                    } catch (NumberFormatException ex) {
+                    }
                 });
             }
         });
         formPanel.add(priceField);
-        
+
         JLabel lblRating = new JLabel("Rating:");
         lblRating.setFont(StyleUtil.FONT_BODY);
         formPanel.add(lblRating);
-        
+
         ratingSpinner = new JSpinner(new SpinnerNumberModel(4.5, 0.0, 5.0, 0.1));
         ratingSpinner.setFont(StyleUtil.FONT_BODY);
         formPanel.add(ratingSpinner);
@@ -116,20 +131,78 @@ public class SellerInputCard extends JPanel {
         Color btnColor = getBackground().darker();
         StyleUtil.styleActionButton(submitOfferButton, new Color(255, 255, 255, 200)); // Whiter button for contrast
         submitOfferButton.addActionListener(e -> submitOffer());
-        
+
+        aiAgentButton = new JButton("🤖 Agentic AI");
+        StyleUtil.styleActionButton(aiAgentButton, new Color(255, 220, 130));
+        aiAgentButton.setToolTipText("Let an AI agent build the most attractive package for this request");
+        aiAgentButton.addActionListener(e -> runAiAgent());
+
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         footer.setOpaque(false);
+        footer.add(aiAgentButton);
         footer.add(submitOfferButton);
         add(footer, BorderLayout.SOUTH);
     }
-    
+
     public void setRequest(TenderRequest request) {
         this.currentRequest = request;
         submitOfferButton.setEnabled(request != null);
+        if (aiAgentButton != null)
+            aiAgentButton.setEnabled(request != null);
         if (request == null) {
             productNameField.setText("");
             priceField.setText("");
         }
+    }
+
+    private void runAiAgent() {
+        if (currentRequest == null) {
+            JOptionPane.showMessageDialog(this, "No active request selected!");
+            return;
+        }
+        final TenderRequest req = currentRequest;
+        final String origLabel = aiAgentButton.getText();
+        aiAgentButton.setEnabled(false);
+        aiAgentButton.setText("Thinking…");
+
+        new SwingWorker<List<GroqAgent.Proposal>, Void>() {
+            @Override
+            protected List<GroqAgent.Proposal> doInBackground() throws Exception {
+                List<Offer> competing = TenderController.getInstance()
+                        .getCompetingOffers(req.getRequestId(), seller.getId());
+                return GroqAgent.generatePackage(
+                        seller.getName(),
+                        req.getQuery(),
+                        req.getPreferences(),
+                        competing);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<GroqAgent.Proposal> proposals = get();
+                    int submitted = 0;
+                    for (GroqAgent.Proposal p : proposals) {
+                        Product product = new Product(p.productName, p.description);
+                        Offer offer = new Offer(seller, product, p.price, p.quantity, p.rating, p.comment, req);
+                        TenderController.getInstance().submitOffer(req.getRequestId(), offer);
+                        submitted++;
+                    }
+                    aiAgentButton.setText("✅ " + submitted + " sent");
+                    Timer t = new Timer(2200, ev -> aiAgentButton.setText(origLabel));
+                    t.setRepeats(false);
+                    t.start();
+                } catch (Exception ex) {
+                    Throwable root = ex.getCause() != null ? ex.getCause() : ex;
+                    JOptionPane.showMessageDialog(SellerInputCard.this,
+                            "AI agent failed: " + root.getMessage(),
+                            "Agent Error", JOptionPane.ERROR_MESSAGE);
+                    aiAgentButton.setText(origLabel);
+                } finally {
+                    aiAgentButton.setEnabled(currentRequest != null);
+                }
+            }
+        }.execute();
     }
 
     private void submitOffer() {
@@ -151,25 +224,25 @@ public class SellerInputCard extends JPanel {
             // Remove dots for parsing (100.000 -> 100000)
             String cleanPrice = priceStr.replaceAll("\\.", "");
             double price = Double.parseDouble(cleanPrice);
-            
+
             int quantity = (Integer) quantitySpinner.getValue();
-            
+
             Product product = new Product(name, name);
             Offer offer = new Offer(seller, product, price, quantity, rating, "", currentRequest);
-            
+
             TenderController.getInstance().submitOffer(currentRequest.getRequestId(), offer);
-            
+
             // Visual feedback
             submitOfferButton.setText("Sent! ✅");
             Timer t = new Timer(2000, e -> submitOfferButton.setText("Send Offer 🚀"));
             t.setRepeats(false);
             t.start();
-            
+
             // Clear inputs
             productNameField.setText("");
             priceField.setText("");
             ratingSpinner.setValue(4.5);
-            
+
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid Price!");
         }

@@ -29,6 +29,13 @@ public class Seller {
         this.address = address != null ? address : "";
     }
 
+    public Seller(String id, String name, String contactId, String address) {
+        this.id = id;
+        this.name = name;
+        this.contactId = contactId != null ? contactId : "";
+        this.address = address != null ? address : "";
+    }
+
     public String getId() { return id; }
     public String getName() { return name; }
     public String getContactId() { return contactId; }
@@ -39,5 +46,18 @@ public class Seller {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Seller)) return false;
+        Seller other = (Seller) o;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id.hashCode();
     }
 }

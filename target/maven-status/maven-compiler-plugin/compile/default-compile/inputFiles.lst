@@ -1,5 +1,12 @@
 /Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/Main.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/ai/GroqAgent.java
 /Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/controller/TenderController.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/Database.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/OfferRepository.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/PaymentRepository.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/ProductRepository.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/TenderRequestRepository.java
+/Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/db/UserRepository.java
 /Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/model/Buyer.java
 /Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/model/Offer.java
 /Users/bagaspra16/Documents/campus-learn/semester-2/object-oriented-visual-programming/bmn-tender-system/src/main/java/com/bnm/tender/model/Payment.java

@@ -13,6 +13,12 @@ public class Buyer {
         this.address = "";
     }
 
+    public Buyer(String id, String name, String address) {
+        this.id = id;
+        this.name = name;
+        this.address = address != null ? address : "";
+    }
+
     public String getId() { return id; }
     public String getName() { return name; }
     public String getAddress() { return address; }
